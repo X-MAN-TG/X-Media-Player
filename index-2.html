@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X Stream &amp; Play</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════════════ -->
+<header id="appHeader">
+  <div class="logo-block">
+    <div class="logo-title"><span class="x">X</span> Stream &amp; Play</div>
+    <div class="logo-sub">All Format Online Video Player</div>
+  </div>
+  <nav>
+    <a href="#library">Library</a>
+    <a href="#add">Add Video</a>
+  </nav>
+  <div class="header-actions">
+    <!-- Theme Toggle -->
+    <div class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">
+      <div class="toggle-track">
+        <span class="toggle-icon toggle-icon-dark">🌙</span>
+        <span class="toggle-icon toggle-icon-light">☀️</span>
+        <div class="toggle-thumb"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ MAIN ══════════════════════════════════════════════════════════════════ -->
+<main>
+
+  <!-- Add Video Panel -->
+  <div class="add-panel" id="add">
+    <div class="add-panel-inner">
+      <div class="add-panel-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Stream
+      </div>
+      <div class="input-row">
+        <div class="field">
+          <label for="urlInput">Video URL — MP4, MKV, WebM, M3U8 (HLS), MPD (DASH)</label>
+          <input type="text" id="urlInput" placeholder="Paste any direct video URL or stream link…" autocomplete="off" spellcheck="false" />
+        </div>
+        <button class="btn-add" id="addBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CUSTOM VIDEO PLAYER ══════════════════════════════════════════════ -->
+  <div class="player-section" id="playerWrap">
+    <div class="now-playing-label">
+      <span class="pulse-dot"></span>
+      Now Playing
+    </div>
+    <div class="player-title" id="playerTitle">Untitled</div>
+
+    <!-- Player container: holds video + all overlays -->
+    <div class="player-container" id="playerContainer">
+
+      <!-- Native video element — no controls attribute -->
+      <video id="videoPlayer" preload="auto" playsinline></video>
+
+      <!-- Loading spinner overlay -->
+      <div class="player-spinner" id="playerSpinner">
+        <div class="spinner-ring"></div>
+      </div>
+
+      <!-- Error overlay -->
+      <div class="player-error" id="playerError">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p id="playerErrorMsg">Could not load video.</p>
+        <small>Check the URL or try a different format.</small>
+      </div>
+
+      <!-- Double-tap seek indicators -->
+      <div class="seek-indicator seek-back" id="seekIndBack">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        <span>-10s</span>
+      </div>
+      <div class="seek-indicator seek-fwd" id="seekIndFwd">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/></svg>
+        <span>+10s</span>
+      </div>
+
+      <!-- Controls Overlay -->
+      <div class="player-controls" id="playerControls">
+
+        <!-- Top bar: stats button -->
+        <div class="ctrl-top-bar">
+          <button class="ctrl-stats-btn" id="statsToggleBtn" title="Stats for Nerds">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Stats
+          </button>
+        </div>
+
+        <!-- Progress / scrubber area -->
+        <div class="ctrl-progress-area">
+          <div class="ctrl-scrubber" id="progressBar" role="slider" aria-label="Video progress">
+            <div class="scrubber-buffer" id="bufferBar"></div>
+            <div class="scrubber-played" id="playedBar"></div>
+            <div class="scrubber-thumb" id="progressThumb"></div>
+          </div>
+          <div class="ctrl-time-row">
+            <span class="ctrl-time" id="timeDisplay">0:00 / 0:00</span>
+          </div>
+        </div>
+
+        <!-- Bottom control bar -->
+        <div class="ctrl-bottom-bar">
+
+          <div class="ctrl-group ctrl-group-left">
+            <!-- Play/Pause -->
+            <button class="ctrl-btn ctrl-btn-primary" id="playPauseBtn" title="Play / Pause (Space)">
+              <!-- Icon swapped by JS -->
+              <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg class="icon-pause hidden" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+
+            <!-- Seek back -->
+            <button class="ctrl-btn" id="seekBackBtn" title="Rewind 10s (←)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+              <span class="ctrl-seek-label">10</span>
+            </button>
+
+            <!-- Seek forward -->
+            <button class="ctrl-btn" id="seekFwdBtn" title="Forward 10s (→)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.5"/></svg>
+              <span class="ctrl-seek-label">10</span>
+            </button>
+
+            <!-- Volume + mute -->
+            <div class="ctrl-volume-wrap">
+              <button class="ctrl-btn" id="muteBtn" title="Mute (M)">
+                <!-- Unmuted icon -->
+                <svg class="icon-vol-on" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <!-- Muted icon -->
+                <svg class="icon-vol-off hidden" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+              </button>
+              <input type="range" class="ctrl-volume-slider" id="volumeSlider" min="0" max="1" step="0.02" value="1" aria-label="Volume">
+            </div>
+          </div>
+
+          <div class="ctrl-group ctrl-group-right">
+            <!-- Speed selector -->
+            <select class="ctrl-speed" id="speedSelect" title="Playback speed">
+              <option value="0.5">0.5×</option>
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.25">1.25×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2×</option>
+            </select>
+
+            <!-- PiP -->
+            <button class="ctrl-btn" id="pipBtn" title="Picture-in-Picture" style="display:none">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><rect x="12" y="11" width="8" height="6" rx="1"/></svg>
+            </button>
+
+            <!-- Fullscreen -->
+            <button class="ctrl-btn" id="fullscreenBtn" title="Fullscreen (F)">
+              <svg class="icon-fs-enter" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              <svg class="icon-fs-exit hidden" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 0 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+            </button>
+          </div>
+
+        </div>
+      </div><!-- /player-controls -->
+
+      <!-- Stats Panel (Stats for Nerds) -->
+      <div class="stats-panel" id="statsPanel">
+        <div class="stats-header">
+          <span class="stats-title">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            X Stream &amp; Play · Stats
+          </span>
+          <button class="stats-close" id="statsCloseBtn">✕</button>
+        </div>
+        <div class="stats-body" id="statsBody">
+          <!-- Filled by player.js -->
+        </div>
+      </div>
+
+    </div><!-- /player-container -->
+  </div><!-- /player-section -->
+
+  <!-- ═══ LIBRARY ═══════════════════════════════════════════════════════════ -->
+  <section id="library">
+    <div class="library-header">
+      <div class="library-title-row">
+        <h2>Your Library</h2>
+        <span class="count-badge" id="countBadge">0 videos</span>
+      </div>
+      <button class="btn-clear-all" id="clearAllBtn" title="Clear all videos">Clear all</button>
+    </div>
+    <!-- Compact list (horizontal cards) -->
+    <div class="video-list" id="videoList"></div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══════════════════════════════════════════════════════════════ -->
+<footer>
+  <p class="footer-copy">© X Bots and Streams</p>
+  <p class="footer-credit">Made With ❤ by <a href="https://t.me/pyrexus" target="_blank" rel="noopener noreferrer" class="footer-link">𝐂𝐈𝐏𝐇𝐄𝐑 𝐗</a></p>
+</footer>
+
+<!-- ═══ TOAST ════════════════════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ SCRIPTS ══════════════════════════════════════════════════════════════ -->
+<!-- HLS config (exposes window.HLS_CONFIG before Hls.js loads) -->
+<script src="hls-config.js"></script>
+<!-- HLS.js CDN (loaded async, used only for .m3u8 streams) -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.11/dist/hls.min.js"></script>
+
+<script type="module">
+  import { initTheme }   from './theme.js';
+  import { initPlayer }  from './player.js';
+  import { initLibrary } from './library.js';
+
+  // Boot sequence
+  document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    initPlayer();
+    initLibrary();
+  });
+</script>
+
+</body>
+</html>
